@@ -107,6 +107,16 @@ async function get_possible_recipes(id) {
     return ret_recipes.slice(0, 10);
 }
 
+/*
+    /login
+    params:{
+        username: str,
+        password: str
+    }
+    return:{
+        sessionId: str
+    }
+*/
 app.get('/login', async (req, res) => {
     let type = req.query.type;
     let id = null;
@@ -132,22 +142,27 @@ app.get('/login', async (req, res) => {
     }
 });
 
+/*
+    /register
+    non va (ancora)
+*/
 app.get('/register', (req, res) => {
     let mail = req.query.mail;
     let psw = req.query.psw;
     res.send(insert_credentials());
 });
 
-app.get('/books', (req, res) => {
-    let sid = req.query.sid;
-    if(sid in sessions)
-    {
-        res.send("ok");
+/*
+    /add
+    params:{
+        sid: str,   (session id)
+        expiration: date,
+        ingredient: str
     }
-    else
-        res.send({"error": 'you need to be authenticated'})
-});
-
+    return:{
+        ok
+    }
+*/
 app.get('/add', (req, res) => {
     let ingredient = req.query.ingredient;
     let expiration = req.query.expiration;
@@ -158,6 +173,15 @@ app.get('/add', (req, res) => {
     res.send("ok");
 });
 
+/*
+    /ingredients
+    params:{
+        sid: str
+    }
+    return:{
+        list of ingredients of the user
+    }
+*/
 app.get('/ingredients', async (req, res) => {
     let sid = req.query.sid;
     //todo: check if session is alive
@@ -166,6 +190,15 @@ app.get('/ingredients', async (req, res) => {
     res.send(ingredients);
 });
 
+/*
+    /recipes
+    params:{
+        sid: str
+    }
+    return:{
+        list of possible recipes of the user
+    }
+*/
 app.get('/recipes', async (req, res) => {
     let sid = req.query.sid;
     //todo: check if session is alive
@@ -174,6 +207,14 @@ app.get('/recipes', async (req, res) => {
     res.send(ret);
 });
 
+/*
+    /guest_registration
+    params:{
+    }
+    return:{
+        sid: string
+    }
+*/
 app.get('/guest_registration', (req, res) => {
     let id = random_bytes(16);
     while(false) {      //todo: check if already created
@@ -182,6 +223,9 @@ app.get('/guest_registration', (req, res) => {
     res.send(id);
 });
 
+/*
+    only for debug
+*/
 app.get('/sessions', (req, res) => {
     res.send(JSON.stringify(sessions));
 });
