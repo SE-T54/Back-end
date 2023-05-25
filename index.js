@@ -3,7 +3,7 @@ const express = require('express');
 const crypto = require('crypto');
 
 function random_bytes(bytes) {
-    return crypto.randomBytes(bytes).toString('base64');
+    return crypto.randomBytes(bytes).toString('hex');
 };
 
 const app = express();
@@ -33,6 +33,11 @@ async function connect(){
 
 let sessions = {};
 let alive_session_per_id = {};  //check if there is only 1 session per user id
+
+function check_session(sid) {
+    console.log(sid);
+    return !(sid in sessions);
+}
 
 async function check_credentials(username, psw) {
     let user = await users.findOne({username: username});
@@ -167,7 +172,10 @@ app.get('/add', (req, res) => {
     let ingredient = req.query.ingredient;
     let expiration = req.query.expiration;
     let sid = req.query.sid;
-    //todo: check if session is alive
+    if(check_session(sid)) {
+        res.send("session not found");
+        return;
+    }
     let id = sessions[sid].id;
     add_ingredient(id, ingredient, expiration);
     res.send("ok");
@@ -184,7 +192,10 @@ app.get('/add', (req, res) => {
 */
 app.get('/ingredients', async (req, res) => {
     let sid = req.query.sid;
-    //todo: check if session is alive
+    if(check_session(sid)) {
+        res.send("session not found");
+        return;
+    }
     let id = sessions[sid].id;
     let ingredients = await get_ingredients(id);
     res.send(ingredients);
@@ -201,7 +212,10 @@ app.get('/ingredients', async (req, res) => {
 */
 app.get('/recipes', async (req, res) => {
     let sid = req.query.sid;
-    //todo: check if session is alive
+    if(check_session(sid)) {
+        res.send("session not found");
+        return;
+    }
     let id = sessions[sid].id;
     let ret = await get_possible_recipes(id);
     res.send(ret);
