@@ -14,8 +14,10 @@ const dbName = "db_progetto";
 let db;
 let users;
 let recipes;
+let ingredients;
 let storage;
 let recipes_query = null;
+let ingredients_query = null;
 let last_fetched_recipes = 0;
 
 async function connect(){
@@ -25,6 +27,7 @@ async function connect(){
         users = db.collection("users");
         recipes = db.collection("recipes");
         storage = db.collection("storage");
+        ingredients = db.collection("ingredients")
     }
     catch(e){
         console.log(e);
@@ -76,10 +79,15 @@ async function add_ingredient(id, name, expiration) {
     st.ingredients.push({name: name, expiration: expiration});
     await storage.replaceOne({userId: id}, st);
 }
-async function get_ingredients(id) {
+async function get_ingredients(id) {    //ingredients of a user
     let st = await storage.findOne({userId: id});
     if(st == null) return null;
     return st.ingredients;
+}
+async function get_all_ingredients(){   //all ingredients
+    if(ingredients_query == null)
+        ingredients_query = await ingredients.find().toArray();
+    return ingredients_query;
 }
 async function get_recipes() {
     if(recipes_query == null)
@@ -199,6 +207,10 @@ app.get('/ingredients', async (req, res) => {
     let ingredients = await get_ingredients(id);
     res.send(ingredients);
 });
+
+app.get('/all_ingredients', async (req, res) => {
+    res.send(await get_all_ingredients())
+})
 
 /*
     /recipes
