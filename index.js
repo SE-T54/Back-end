@@ -7,7 +7,7 @@ function random_bytes(bytes) {
 };
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const uri = "mongodb+srv://admin:Afs3rAp8b8q0jGGj@cluster0.gozvphc.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 const dbName = "db_progetto";
@@ -257,4 +257,4 @@ app.get('/sessions', (req, res) => {
 
 
 connect();
-app.listen(port, () => console.log(`Hello world app listening on port ${port}!`));
+app.listen(port, "0.0.0.0", () => console.log(`Hello world app listening on port ${port}!`));
