@@ -1,0 +1,313 @@
+openapi: 3.0.3
+info:
+  title: SuperFrigo
+  description: API description
+  version: 1.0.0
+servers:
+  - url: https://back-end-production-d316.up.railway.app
+components:
+  schemas:
+    Ingredient:
+      type: object
+      properties:
+        name:
+          type: string
+          #default: mozzarella
+        expiration:
+          type: string
+          #default: 01/01/1970
+        quantity:
+          type: integer
+          format: int32
+          #default: 100
+    Recipe:
+      type: object
+      properties:
+        title:
+          type: string
+        ingredients:
+          type: array
+          items:
+            $ref: '#components/schemas/Ingredient'
+        image:
+          type: string
+        link:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+
+paths:
+  /login:
+    get:
+      summary: Login api.
+      description: Used to log in, if type='guest' only id is required otherwise only username and psw are required
+      parameters:
+        - name: type
+          in: query
+          description: specify login type
+          required: true
+          schema:
+            type: string
+            default: user
+            enum:
+              - user
+              - guest
+        - name: username
+          in: query
+          description: username for login, required if type is 'user'
+          required: false
+          schema:
+            type: string
+            default: SampleUsername
+        - name: psw
+          in: query
+          description: hashed psw for login, required if type is 'user'
+          required: false
+          schema:
+            type: string
+            default: HashedPassword
+        - name: id
+          in: query
+          description: hashed psw for login, required if type is 'guest', this can be obtained by /guest_registration
+          required: false
+          schema:
+            type: string
+            default: GuestID
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                type:
+                  type: string
+                username:
+                  type: string
+                psw:
+                  type: string
+                id:
+                  type: string
+              example:   # Sample object
+                type: user
+                username: SampleUsername
+                psw: HashedPassword
+      responses:
+        '200':    # status code
+          description: SID (session id)
+          content:
+            json:
+              schema: 
+                type: string
+        '400':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: Wrong Credentials
+  /register:
+    post:
+      summary: Login api.
+      description: Used to register
+      parameters:
+        - name: mail
+          in: query
+          description: email to register
+          required: true
+          schema:
+            type: string
+            default: user@email.com
+        - name: psw
+          in: query
+          description: hashed psw to register
+          required: true
+          schema:
+            type: string
+            default: HashedPassword
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                mail:
+                  type: string
+                psw:
+                  type: string
+              example:   # Sample object
+                mail: user@email.com
+                psw: HashedPassword
+      responses:
+        '200':    # status code
+          description: Ok code
+          content:
+            json:
+              schema: 
+                type: string
+                example: ok
+        '400':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: email already used
+        '401':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: email not valid
+  /add:
+      post:
+        summary: Add ingredient
+        description: Add an ingredient to the user personal storage
+        parameters:
+          - name: sid
+            in: query
+            description: SID
+            required: true
+            schema:
+              type: string
+              default: 000SessionID000
+          - name: ingredient
+            in: query
+            description: The ingredient to add
+            required: true
+            schema:
+              $ref: '#components/schemas/Ingredient'
+        requestBody:
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                properties:
+                  sid:
+                    type: string
+                  ingredient:
+                    $ref: '#components/schemas/Ingredient'
+                example:   # Sample object
+                  sid: 000SessionID000
+                  ingredient:
+                    name: Mozzarella
+                    expiration: 01/01/1970
+                    quantity: 100
+        responses:
+          '200':    # status code
+            description: Ok code
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: ok
+          '403':    # status code
+            description: Error
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: session not found
+  /ingredients:
+      get:
+        summary: list of ingredients of the user
+        description: Get all the ingredients in the user storage
+        parameters:
+          - name: sid
+            in: query
+            description: SID
+            required: true
+            schema:
+              type: string
+              default: 000SessionID000
+        requestBody:
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                properties:
+                  sid:
+                    type: string
+                example:   # Sample object
+                  sid: 000SessionID000
+        responses:
+          '200':    # status code
+            description: List of ingredients
+            content:
+              json:
+                schema: 
+                  type: array
+                  items:
+                    $ref: '#components/schemas/Ingredient'
+          '403':    # status code
+            description: Session not found
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: session not found
+  /all_ingredients:
+      get:
+        summary: All ingredients
+        description: list of all ingredients in the DB
+        responses:
+          '200':    # status code
+            description: List of ingredients
+            content:
+              json:
+                schema: 
+                  type: array
+                  items:
+                    type: object
+  /recipes:
+      get:
+        summary: Get possible recipes
+        description: Get all the possible recipes with the user storage, ordered by number of missing ingredients (ascending order)
+        parameters:
+          - name: sid
+            in: query
+            description: SID
+            required: true
+            schema:
+              type: string
+              default: 000SessionID000
+        requestBody:
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                properties:
+                  sid:
+                    type: string
+                example:   # Sample object
+                  sid: 000SessionID000
+        responses:
+          '200':    # status code
+            description: List of recipes
+            content:
+              json:
+                schema: 
+                  type: array
+                  items:
+                    $ref: '#components/schemas/Recipe'
+          '403':    # status code
+            description: Session not found
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: session not found
+  /guest_registration:
+      get:
+        summary: Login for guests
+        description: Generate an unique id for the guest
+        responses:
+          '200':    # status code
+            description: ID
+            content:
+              json:
+                schema: 
+                  type: integer
+                  example: 1

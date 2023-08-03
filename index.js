@@ -1,6 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const express = require('express');
 const crypto = require('crypto');
+const swaggerUi = require('swagger-ui-express')
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 function random_bytes(bytes) {
     return crypto.randomBytes(bytes).toString('hex');
@@ -13,6 +16,7 @@ const client = new MongoClient(uri);
 const dbName = "db_progetto";
 let db;
 let users;
+let guests;
 let recipes;
 let ingredients;
 let storage;
@@ -25,6 +29,7 @@ async function connect(){
         await client.connect();
         db = client.db(dbName);
         users = db.collection("users");
+        guests = db.collection("guests");
         recipes = db.collection("recipes");
         storage = db.collection("storage");
         ingredients = db.collection("ingredients")
@@ -33,6 +38,12 @@ async function connect(){
         console.log(e);
     }
 }
+
+const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+  };
 
 let sessions = {};
 let alive_session_per_id = {};  //check if there is only 1 session per user id
@@ -50,12 +61,6 @@ async function check_credentials(username, psw) {
     }
     return null;
 }
-function insert_credentials(mail, psw) {
-    let id = random_bytes(16);
-    //todo: check if email is already used
-    //todo: send verification email
-    //todo: verificate email
-}
 function generate_session_id(id) {
     let sid = 0;
     do{
@@ -63,7 +68,7 @@ function generate_session_id(id) {
     }while(sid in sessions);
 
     if(id in alive_session_per_id)
-        delete sessions[alive_session_per_id[id]];  //todo: add multiple sessions per user
+        delete sessions[alive_session_per_id[id]];
 
     sessions[sid] = {id: id, time: Date.now()};
     alive_session_per_id[id] = sid;
@@ -135,7 +140,6 @@ app.get('/login', async (req, res) => {
     if(type == 'guest')
     {
         id = req.query.id;
-        console.log(id)
     }
     else
     {
@@ -150,18 +154,26 @@ app.get('/login', async (req, res) => {
     }
     else
     {
-        res.send({"error": "Wrong Credentials"});
+        res.status(400).send("Wrong Credentials");
     }
 });
 
 /*
     /register
-    non va (ancora)
 */
-app.get('/register', (req, res) => {
+app.get('/register', async (req, res) => {
     let mail = req.query.mail;
     let psw = req.query.psw;
-    res.send(insert_credentials());
+    if(!validateEmail(mail))
+        res.status(401).send("email not valid");
+    let id = random_bytes(16);
+    let check = await users.findOne({email: mail});
+    if(check != null){
+        //todo: send verification email
+        //todo: add user to database
+        res.send("ok")
+    }
+    res.status(400).send("email already used");
 });
 
 /*
@@ -175,12 +187,12 @@ app.get('/register', (req, res) => {
         ok
     }
 */
-app.get('/add', (req, res) => {
+app.post('/add', (req, res) => {
     let ingredient = req.query.ingredient;
     let expiration = req.query.expiration;
     let sid = req.query.sid;
     if(check_session(sid)) {
-        res.send("session not found");
+        res.status(403).send("session not found");
         return;
     }
     let id = sessions[sid].id;
@@ -224,7 +236,7 @@ app.get('/all_ingredients', async (req, res) => {
 app.get('/recipes', async (req, res) => {
     let sid = req.query.sid;
     if(check_session(sid)) {
-        res.send("session not found");
+        res.status(403).send("session not found");
         return;
     }
     let id = sessions[sid].id;
@@ -240,11 +252,14 @@ app.get('/recipes', async (req, res) => {
         sid: string
     }
 */
-app.get('/guest_registration', (req, res) => {
+app.get('/guest_registration', async (req, res) => {
     let id = random_bytes(16);
-    while(false) {      //todo: check if already created
+    while(true) {
+        let tmp = await guests.findOne({id: id});
+        if(tmp != null) break;
         id = random_bytes(16);
     }
+    guests.insertOne({id: id, last_login: Date.now()})
     res.send(id);
 });
 
@@ -254,6 +269,8 @@ app.get('/guest_registration', (req, res) => {
 app.get('/sessions', (req, res) => {
     res.send(JSON.stringify(sessions));
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 connect();
