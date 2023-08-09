@@ -135,6 +135,7 @@ async function get_possible_recipes(id) {
     }
 */
 app.get('/login', async (req, res) => {
+    console.log("/login");
     let type = req.query.type;
     let id = null;
     if(type == 'guest')
@@ -162,6 +163,7 @@ app.get('/login', async (req, res) => {
     /register
 */
 app.get('/register', async (req, res) => {
+    console.log("/register");
     let mail = req.query.mail;
     let psw = req.query.psw;
     if(!validateEmail(mail))
@@ -188,6 +190,7 @@ app.get('/register', async (req, res) => {
     }
 */
 app.post('/add', (req, res) => {
+    console.log("/add");
     let ingredient = req.query.ingredient;
     let expiration = req.query.expiration;
     let sid = req.query.sid;
@@ -210,6 +213,7 @@ app.post('/add', (req, res) => {
     }
 */
 app.get('/ingredients', async (req, res) => {
+    console.log("/ingredients");
     let sid = req.query.sid;
     if(check_session(sid)) {
         res.send("session not found");
@@ -221,6 +225,7 @@ app.get('/ingredients', async (req, res) => {
 });
 
 app.get('/all_ingredients', async (req, res) => {
+    console.log("/all_ingredients");
     res.send(await get_all_ingredients())
 })
 
@@ -234,6 +239,7 @@ app.get('/all_ingredients', async (req, res) => {
     }
 */
 app.get('/recipes', async (req, res) => {
+    console.log("/recipes");
     let sid = req.query.sid;
     if(check_session(sid)) {
         res.status(403).send("session not found");
@@ -253,6 +259,7 @@ app.get('/recipes', async (req, res) => {
     }
 */
 app.get('/guest_registration', async (req, res) => {
+    console.log("/guest_registration");
     let id = random_bytes(16);
     while(true) {
         let tmp = await guests.findOne({id: id});
@@ -267,6 +274,7 @@ app.get('/guest_registration', async (req, res) => {
     only for debug
 */
 app.get('/sessions', (req, res) => {
+    console.log("/sessions");
     res.send(JSON.stringify(sessions));
 });
 
