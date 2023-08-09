@@ -96,14 +96,14 @@ async function get_all_ingredients(){   //all ingredients
 }
 async function get_recipes() {
     if(recipes_query == null)
-        recipes_query = await recipes.find().toArray();
+        recipes_query = await recipes.find().limit(100).toArray();
     return recipes_query;
 }
 async function get_possible_recipes(id) {
     let ingredients = await get_ingredients(id);
     let s = new Set(ingredients.map(t => t.name));
     let recipes = await get_recipes();
-    console.log("recipes", recipes);
+    //console.log("recipes", recipes);
     let ret_recipes = []
 
     for(let i=0;i<recipes.length;i++) {
@@ -280,6 +280,6 @@ app.get('/sessions', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-
 connect();
+
 app.listen(port, "0.0.0.0", () => console.log(`Hello world app listening on port ${port}!`));
