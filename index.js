@@ -216,7 +216,7 @@ app.get('/ingredients', async (req, res) => {
     console.log("/ingredients");
     let sid = req.query.sid;
     if(check_session(sid)) {
-        res.send("session not found");
+        res.status(403).send("session not found");
         return;
     }
     let id = sessions[sid].id;
