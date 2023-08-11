@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const express = require('express');
 const crypto = require('crypto');
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express')
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger.yaml');
@@ -170,10 +171,11 @@ app.get('/register', async (req, res) => {
         res.status(401).send("email not valid");
     let id = random_bytes(16);
     let check = await users.findOne({email: mail});
-    if(check != null){
+    if(check == null){
         //todo: send verification email
-        //todo: add user to database
+        users.insertOne({username: req.query.username, psw: psw, email: mail});
         res.send("ok")
+        return;
     }
     res.status(400).send("email already used");
 });
@@ -278,6 +280,10 @@ app.get('/sessions', (req, res) => {
     res.send(JSON.stringify(sessions));
 });
 
+//todo: cambio password
+//todo: rimuovi ingrediente
+
+app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 connect();
