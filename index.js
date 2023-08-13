@@ -164,7 +164,7 @@ app.get('/login', async (req, res) => {
 /*
     /register
 */
-app.get('/register', async (req, res) => {
+app.post('/register', async (req, res) => {
     console.log("/register");
     let mail = req.query.mail;
     let psw = req.query.psw;
