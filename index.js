@@ -169,7 +169,10 @@ app.get('/register', async (req, res) => {
     let mail = req.query.mail;
     let psw = req.query.psw;
     if(!validateEmail(mail))
+    {
         res.status(401).send("email not valid");
+        return;
+    }
     let id = random_bytes(16);
     let check = await users.findOne({email: mail});
     if(check == null){
