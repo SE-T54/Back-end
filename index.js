@@ -10,12 +10,6 @@ function random_bytes(bytes) {
     return crypto.randomBytes(bytes).toString('hex');
 };
 
-
-app.use(cors());
-
-app.use(express.json());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 const app = express();
 const port = process.env.PORT || 3000;
 const uri = "mongodb+srv://admin:Afs3rAp8b8q0jGGj@cluster0.gozvphc.mongodb.net/?retryWrites=true&w=majority";
@@ -30,6 +24,11 @@ let storage;
 let recipes_query = null;
 let ingredients_query = null;
 let last_fetched_recipes = 0;
+
+app.use(cors());
+
+app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 async function connect(){
     try{
