@@ -283,7 +283,12 @@ app.get('/sessions', (req, res) => {
 //todo: cambio password
 //todo: rimuovi ingrediente
 
-app.use(cors());
+app.use(cors({
+    methods: 'GET,POST,PUT,DELETE',
+    allowedHeaders: 'Content-Type,Authorization'
+    //credentials: true, // Se si vogliono inviare cookie o credenziali
+}));
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 connect();
