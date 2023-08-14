@@ -109,30 +109,30 @@ paths:
                 example: Wrong Credentials
   /register:
     post:
-      summary: Login api.
+      summary: Register api.
       description: Used to register
-      parameters:
-        - name: mail
-          in: query
-          description: email to register
-          required: true
-          schema:
-            type: string
-            default: user@email.com
-        - name: psw
-          in: query
-          description: hashed psw to register
-          required: true
-          schema:
-            type: string
-            default: HashedPassword
-        - name: username
-          in: query
-          description: the username
-          required: true
-          schema:
-            type: string
-            default: username
+      #parameters:
+      #  - name: mail
+      #    in: query
+      #    description: email to register
+      #    required: true
+      #    schema:
+      #      type: string
+      #      default: user@email.com
+      #  - name: psw
+      #    in: query
+      #    description: hashed psw to register
+      #    required: true
+      #    schema:
+      #      type: string
+      #      default: HashedPassword
+      #  - name: username
+      #    in: query
+      #    description: the username
+      #    required: true
+      #    schema:
+      #      type: string
+      #      default: username
       requestBody:
         content:
           application/json:
@@ -174,20 +174,20 @@ paths:
       post:
         summary: Add ingredient
         description: Add an ingredient to the user personal storage
-        parameters:
-          - name: sid
-            in: query
-            description: SID
-            required: true
-            schema:
-              type: string
-              default: 000SessionID000
-          - name: ingredient
-            in: query
-            description: The ingredient to add
-            required: true
-            schema:
-              $ref: '#components/schemas/Ingredient'
+        #parameters:
+        #  - name: sid
+        #    in: query
+        #    description: SID
+        #    required: true
+        #    schema:
+        #      type: string
+        #      default: 000SessionID000
+        #  - name: ingredient
+        #    in: query
+        #    description: The ingredient to add
+        #    required: true
+        #    schema:
+        #      $ref: '#components/schemas/Ingredient'
         requestBody:
           content:
             application/json:
@@ -320,3 +320,39 @@ paths:
                 schema: 
                   type: integer
                   example: 1
+  /delete_account:
+    post:
+      summary: Delete the user
+      description: Used to delete all data of an account
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                sid:
+                  type: string
+              example:   # Sample object
+                sid: 000SessionID000
+      responses:
+        '200':    # status code
+          description: Ok code
+          content:
+            json:
+              schema: 
+                type: string
+                example: ok
+        '400':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: email already used
+        '401':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: email not valid

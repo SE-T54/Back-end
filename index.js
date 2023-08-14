@@ -64,7 +64,7 @@ async function check_credentials(username, psw) {
     if(user == null) return null;
     if(user.psw == psw)
     {
-        return parseInt(user._id.valueOf(), 16);
+        return user.userId;
     }
     return null;
 }
@@ -182,7 +182,7 @@ app.post('/register', async (req, res) => {
     let check = await users.findOne({email: mail});
     if(check == null){
         //todo: send verification email
-        users.insertOne({username: req.body.username, psw: psw, email: mail});
+        users.insertOne({username: req.body.username, psw: psw, email: mail, userId: id});
         res.send("ok")
         return;
     }
@@ -202,9 +202,9 @@ app.post('/register', async (req, res) => {
 */
 app.post('/add', (req, res) => {
     console.log("/add");
-    let ingredient = req.query.ingredient;
-    let expiration = req.query.expiration;
-    let sid = req.query.sid;
+    let ingredient = req.body.ingredient;
+    let expiration = req.body.expiration;
+    let sid = req.body.sid;
     if(check_session(sid)) {
         res.status(403).send("session not found");
         return;
@@ -287,6 +287,25 @@ app.get('/guest_registration', async (req, res) => {
 app.get('/sessions', (req, res) => {
     console.log("/sessions");
     res.send(JSON.stringify(sessions));
+});
+
+app.post('/delete_account', async (req, res) => {
+    console.log("/delete_account");
+    let sid = req.body.sid;
+    if(check_session(sid)) {
+        res.status(403).send("session not found");
+        return;
+    }
+    let uid = sessions[sid].id;
+    
+    let response = await users.deleteOne({userId: uid});
+    
+    if(response.deletedCount == 1)
+    {
+        await storage.deleteOne({userId: uid});
+        res.send("ok");
+    }
+    else res.status(404).send("username not found");
 });
 
 //todo: cambio password
