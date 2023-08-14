@@ -41,6 +41,7 @@ async function connect(){
 }
 
 const validateEmail = (email) => {
+    if(email == null) return false;
     return email.match(
       /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
@@ -163,12 +164,15 @@ app.get('/login', async (req, res) => {
 /*
     /register
 */
-app.get('/register', async (req, res) => {
+app.post('/register', async (req, res) => {
     console.log("/register");
     let mail = req.query.mail;
     let psw = req.query.psw;
     if(!validateEmail(mail))
+    {
         res.status(401).send("email not valid");
+        return;
+    }
     let id = random_bytes(16);
     let check = await users.findOne({email: mail});
     if(check == null){
