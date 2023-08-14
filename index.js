@@ -10,6 +10,12 @@ function random_bytes(bytes) {
     return crypto.randomBytes(bytes).toString('hex');
 };
 
+
+app.use(cors());
+
+app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 const app = express();
 const port = process.env.PORT || 3000;
 const uri = "mongodb+srv://admin:Afs3rAp8b8q0jGGj@cluster0.gozvphc.mongodb.net/?retryWrites=true&w=majority";
@@ -287,10 +293,6 @@ app.get('/sessions', (req, res) => {
 //todo: cambio password
 //todo: rimuovi ingrediente
 
-app.use(cors());
-
-app.use(express.json());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 connect();
 
