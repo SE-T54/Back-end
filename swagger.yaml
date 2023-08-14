@@ -126,6 +126,13 @@ paths:
           schema:
             type: string
             default: HashedPassword
+        - name: username
+          in: query
+          description: the username
+          required: true
+          schema:
+            type: string
+            default: username
       requestBody:
         content:
           application/json:
@@ -135,6 +142,8 @@ paths:
                 mail:
                   type: string
                 psw:
+                  type: string
+                username:
                   type: string
               example:   # Sample object
                 mail: user@email.com
