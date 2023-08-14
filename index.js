@@ -166,8 +166,8 @@ app.get('/login', async (req, res) => {
 */
 app.post('/register', async (req, res) => {
     console.log("/register");
-    let mail = req.query.mail;
-    let psw = req.query.psw;
+    let mail = req.body.mail;
+    let psw = req.body.psw;
     if(!validateEmail(mail))
     {
         res.status(401).send("email not valid");
@@ -177,7 +177,7 @@ app.post('/register', async (req, res) => {
     let check = await users.findOne({email: mail});
     if(check == null){
         //todo: send verification email
-        users.insertOne({username: req.query.username, psw: psw, email: mail});
+        users.insertOne({username: req.body.username, psw: psw, email: mail});
         res.send("ok")
         return;
     }
@@ -287,11 +287,7 @@ app.get('/sessions', (req, res) => {
 //todo: cambio password
 //todo: rimuovi ingrediente
 
-app.use(cors({
-    methods: 'GET,POST,PUT,DELETE',
-    allowedHeaders: 'Content-Type,Authorization'
-    //credentials: true, // Se si vogliono inviare cookie o credenziali
-}));
+app.use(cors());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
