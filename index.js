@@ -216,6 +216,32 @@ app.post('/add', (req, res) => {
     res.send("ok");
 });
 
+app.delete('/remove', async (req, res) => {
+    console.log('/remove');
+    let sid = req.body.sid;
+    let ingredient = req.body.ingredient;
+    if(check_session(sid)) {
+        res.status(403).send("session not found");
+        return;
+    }
+    let id = sessions[sid].id;
+    try{
+        let st = await storage.findOne({userId: id});
+        if(st == null){
+            res.send("ok");
+            return;
+        }
+        st.ingredients = st.ingredients.filter((value) => {return value.name != ingredient});
+        await storage.replaceOne({userId: id}, st);
+        res.send("ok");
+    }
+    catch(error)
+    {
+        console.log(error);
+        res.status(401).send("error");
+    }
+})
+
 /*
     /ingredients
     params:{
@@ -310,8 +336,42 @@ app.post('/delete_account', async (req, res) => {
     else res.status(404).send("username not found");
 });
 
-//todo: cambio password
-//todo: rimuovi ingrediente
+app.post('/change_password', async (req, res) => {
+    console.log("/change_password");
+    let sid = req.body.sid;
+    let old_psw = req.body.old_psw;
+    let new_psw = req.body.new_psw;
+    if(old_psw == new_psw)
+    {
+        res.status(402).send("the new password is the same as the old one");
+        return;
+    }
+    if(check_session(sid)) {
+        res.status(403).send("session not found");
+        return;
+    }
+    let uid = sessions[sid].id;
+    try{
+        let psw_check = await users.findOne({userId: uid});
+        if(old_psw != psw_check.psw)
+        {
+            res.status(405).send("old password does not correspond");
+            return;
+        }
+        await users.updateOne({ userId: uid },
+        {
+            $set: {
+                psw: new_psw
+            }
+        });
+        res.send("ok");
+    }
+    catch (error) 
+    {
+        console.error(error);
+        res.status(404).send("user not found");
+    }
+});
 
 
 connect();

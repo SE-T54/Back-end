@@ -356,3 +356,97 @@ paths:
               schema: 
                 type: string
                 example: email not valid
+  /change_password:
+    post:
+      summary: Change the user password
+      description: The new and the old password must be hashed
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                sid:
+                  type: string
+                old_psw:
+                  type: string
+                new_psw:
+                  type: string
+              example:   # Sample object
+                sid: 000SessionID000
+                old_psw: Password1
+                new_psw: Password2
+      responses:
+        '200':    # status code
+          description: Ok code
+          content:
+            json:
+              schema: 
+                type: string
+                example: ok
+        '402':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: the new password is the same as the old one
+        '403':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: session not found
+        '405':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: old password does not correspond
+        '404':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: user not found
+  /remove:
+    delete:
+      summary: Remove an ingredient from the user storage
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                sid:
+                  type: string
+                ingredient:
+                  type: string
+              example:   # Sample object
+                sid: 000SessionID000
+                old_psw: Spaghetti
+      responses:
+        '200':    # status code
+          description: Ok code
+          content:
+            json:
+              schema: 
+                type: string
+                example: ok
+        '403':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: session not found
+        '401':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: generic error
