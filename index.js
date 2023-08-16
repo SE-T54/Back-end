@@ -108,7 +108,9 @@ async function get_recipes() {
 }
 async function get_possible_recipes(id) {
     let ingredients = await get_ingredients(id);
-    let s = new Set(ingredients.map(t => t.name));
+    let s;
+    if(ingredients == null) s = new Set();
+    else s = new Set(ingredients.map(t => t.name));
     let recipes = await get_recipes();
     //console.log("recipes", recipes);
     let ret_recipes = []
