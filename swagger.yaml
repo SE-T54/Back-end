@@ -427,7 +427,7 @@ paths:
                   type: string
               example:   # Sample object
                 sid: 000SessionID000
-                old_psw: Spaghetti
+                ingredient: Spaghetti
       responses:
         '200':    # status code
           description: Ok code

@@ -25,6 +25,9 @@ let recipes_query = null;
 let ingredients_query = null;
 let last_fetched_recipes = 0;
 
+let sessions = {};
+let alive_session_per_id = {};  //check if there is only 1 session per user id
+
 app.use(cors());
 
 app.use(express.json());
@@ -39,6 +42,9 @@ async function connect(){
         recipes = db.collection("recipes");
         storage = db.collection("storage");
         ingredients = db.collection("ingredients")
+        let guest_ids = await guests.find().toArray();
+        guest_ids.forEach((e) => sessions[e.id] = {id: e.id, time: Date.now()});
+        console.log(sessions);
     }
     catch(e){
         console.log(e);
@@ -52,8 +58,6 @@ const validateEmail = (email) => {
     );
   };
 
-let sessions = {};
-let alive_session_per_id = {};  //check if there is only 1 session per user id
 
 function check_session(sid) {
     return !(sid in sessions);
@@ -300,11 +304,15 @@ app.get('/recipes', async (req, res) => {
 app.get('/guest_registration', async (req, res) => {
     console.log("/guest_registration");
     let id = random_bytes(16);
-    while(true) {
-        let tmp = await guests.findOne({id: id});
-        if(tmp != null) break;
+    
+    do{
         id = random_bytes(16);
-    }
+        while(true) {
+            let tmp = await guests.findOne({id: id});
+            if(tmp == null) break;
+            id = random_bytes(16);
+        }
+    }while(id in sessions);
     guests.insertOne({id: id, last_login: Date.now()})
     res.send(id);
 });
