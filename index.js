@@ -44,7 +44,6 @@ async function connect(){
         ingredients = db.collection("ingredients")
         let guest_ids = await guests.find().toArray();
         guest_ids.forEach((e) => sessions[e.id] = {id: e.id, time: Date.now()});
-        console.log(sessions);
     }
     catch(e){
         console.log(e);
@@ -85,14 +84,14 @@ function generate_session_id(id) {
     alive_session_per_id[id] = sid;
     return sid;
 }
-async function add_ingredient(id, name, expiration) {
+async function add_ingredient(id, ingredient, expiration) {
     let st = await storage.findOne({userId: id});
     if(st == null)
     {
         st = {userId: id, ingredients: []};
         await storage.insertOne(st);
     }
-    st.ingredients.push({name: name, expiration: expiration});
+    st.ingredients.push({name: ingredient.name, expiration: ingredient.expiration});
     await storage.replaceOne({userId: id}, st);
 }
 async function get_ingredients(id) {    //ingredients of a user
@@ -209,14 +208,13 @@ app.post('/register', async (req, res) => {
 app.post('/add', (req, res) => {
     console.log("/add");
     let ingredient = req.body.ingredient;
-    let expiration = req.body.expiration;
     let sid = req.body.sid;
     if(check_session(sid)) {
         res.status(403).send("session not found");
         return;
     }
     let id = sessions[sid].id;
-    add_ingredient(id, ingredient, expiration);
+    add_ingredient(id, ingredient);
     res.send("ok");
 });
 
