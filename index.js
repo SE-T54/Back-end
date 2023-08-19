@@ -312,7 +312,7 @@ app.get('/guest_registration', async (req, res) => {
         }
     }while(id in sessions);
     guests.insertOne({id: id, last_login: Date.now()})
-    res.send(id);
+    res.send(id.toString());
 });
 
 /*
