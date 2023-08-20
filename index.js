@@ -230,7 +230,7 @@ app.delete('/remove', async (req, res) => {
     try{
         let st = await storage.findOne({userId: id});
         if(st == null){
-            res.send("ok");
+            res.send("storage not found");
             return;
         }
         st.ingredients = st.ingredients.filter((value) => {return value.name != ingredient});
