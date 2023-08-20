@@ -222,6 +222,7 @@ app.delete('/remove', async (req, res) => {
     console.log('/remove');
     let sid = req.body.sid;
     let ingredient = req.body.ingredient;
+    console.log("ingredient");
     if(check_session(sid)) {
         res.status(403).send("session not found");
         return;
@@ -230,12 +231,14 @@ app.delete('/remove', async (req, res) => {
     try{
         let st = await storage.findOne({userId: id});
         if(st == null){
-            res.send("ok");
+            res.send("storage not found");
             return;
         }
+        let old = st.ingredients.length;
         st.ingredients = st.ingredients.filter((value) => {return value.name != ingredient});
         await storage.replaceOne({userId: id}, st);
-        res.send("ok");
+        let removed = old-st.ingredients.length;
+        res.send("removed " + removed.toString() + " elements");
     }
     catch(error)
     {
