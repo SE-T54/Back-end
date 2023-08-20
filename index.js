@@ -130,10 +130,10 @@ async function get_possible_recipes(id) {
                 missing.push(ing);
             }
         }
-        ret_recipes.push([recipes[i].title, missing, cnt]);
+        ret_recipes.push([recipes[i], missing, cnt]);
     }
     ret_recipes.sort((a,b) => a[2]-b[2]);
-    return ret_recipes.slice(0, 10);
+    return ret_recipes.slice(0, 10).map((x) => x[0]);
 }
 
 /*
