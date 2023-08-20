@@ -222,7 +222,7 @@ app.delete('/remove', async (req, res) => {
     console.log('/remove');
     let sid = req.body.sid;
     let ingredient = req.body.ingredient;
-    console.log("ingredient");
+    console.log(ingredient);
     if(check_session(sid)) {
         res.status(403).send("session not found");
         return;
