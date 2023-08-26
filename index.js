@@ -235,7 +235,10 @@ app.delete('/remove', async (req, res) => {
             return;
         }
         let old = st.ingredients.length;
-        st.ingredients = st.ingredients.filter((value) => {return value.name != ingredient});
+        const index = st.ingredients.findIndex(value => value.name == ingredient);
+        if (index > -1) {
+            st.ingredients.splice(index, 1);
+        }
         await storage.replaceOne({userId: id}, st);
         let removed = old-st.ingredients.length;
         res.send("removed " + removed.toString() + " elements");
