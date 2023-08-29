@@ -121,6 +121,7 @@ async function get_possible_recipes(id) {
     for(let i=0;i<recipes.length;i++) {
         let missing = [];
         let cnt = 0;
+        let cnt2 = 0;
         for(let j=0;j<recipes[i].ingredients.length;j++)
         {
             let ing = Object.keys(recipes[i].ingredients[j])[0];
@@ -129,10 +130,14 @@ async function get_possible_recipes(id) {
                 cnt++;
                 missing.push(ing);
             }
+            else cnt2++;
         }
-        ret_recipes.push([recipes[i], missing, cnt]);
+        ret_recipes.push([recipes[i], missing, cnt, cnt2]);
     }
-    ret_recipes.sort((a,b) => a[2]-b[2]);
+    ret_recipes = ret_recipes.sort(function(a, b){
+        if(a[3] == b[3]) return a[2] - b[2];
+        return b[3]-a[3];
+    });
     return ret_recipes.slice(0, 10).map((x) => x[0]);
 }
 
