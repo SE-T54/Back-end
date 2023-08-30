@@ -322,7 +322,8 @@ app.get('/guest_registration', async (req, res) => {
             id = random_bytes(16);
         }
     }while(id in sessions);
-    guests.insertOne({id: id, last_login: Date.now()})
+    guests.insertOne({id: id, last_login: Date.now()});
+    sessions[id] = {id: id, time: Date.now()};
     res.send(id.toString());
 });
 
