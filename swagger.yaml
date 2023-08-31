@@ -44,55 +44,20 @@ paths:
       summary: Login api.
       description: Used to log in, if type='guest' only id is required otherwise only username and psw are required
       parameters:
-        - name: type
+        - name: email
           in: query
-          description: specify login type
+          description: email for login
           required: true
-          schema:
-            type: string
-            default: user
-            enum:
-              - user
-              - guest
-        - name: username
-          in: query
-          description: username for login, required if type is 'user'
-          required: false
           schema:
             type: string
             default: SampleUsername
         - name: psw
           in: query
-          description: hashed psw for login, required if type is 'user'
-          required: false
+          description: hashed psw for login
+          required: true
           schema:
             type: string
             default: HashedPassword
-        - name: id
-          in: query
-          description: hashed psw for login, required if type is 'guest', this can be obtained by /guest_registration
-          required: false
-          schema:
-            type: string
-            default: GuestID
-      requestBody:
-        content:
-          application/json:
-            schema:      # Request body contents
-              type: object
-              properties:
-                type:
-                  type: string
-                username:
-                  type: string
-                psw:
-                  type: string
-                id:
-                  type: string
-              example:   # Sample object
-                type: user
-                username: SampleUsername
-                psw: HashedPassword
       responses:
         '200':    # status code
           description: SID (session id)
