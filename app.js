@@ -111,7 +111,7 @@ async function get_all_ingredients(){   //all ingredients
 }
 async function get_recipes() {
     if(recipes_query == null)
-        recipes_query = await recipes.find().limit(100).toArray();
+        recipes_query = await recipes.find().limit(1000).toArray();
     return recipes_query;
 }
 async function get_possible_recipes(id) {
