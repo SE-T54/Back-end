@@ -102,7 +102,7 @@ async function add_ingredient(id, ingredient, expiration) {
 }
 async function get_ingredients(id) {    //ingredients of a user
     let st = await storage.findOne({userId: id});
-    if(st == null) return null;
+    if(st == null) return [];
     return st.ingredients;
 }
 async function get_all_ingredients(){   //all ingredients
