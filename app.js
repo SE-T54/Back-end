@@ -31,6 +31,7 @@ let ingredients_query = null;
 let last_fetched_recipes = 0;
 
 let sessions = {};
+let is_guest = new Set();
 let alive_session_per_id = {};  //check if there is only 1 session per user id
 
 app.use(cors());
@@ -48,7 +49,7 @@ async function connect(){
         storage = db.collection("storage");
         ingredients = db.collection("ingredients")
         let guest_ids = await guests.find().toArray();
-        guest_ids.forEach((e) => sessions[e.id] = {id: e.id, time: Date.now()});
+        guest_ids.forEach((e) => {is_guest.add(e.id); sessions[e.id] = {id: e.id, time: Date.now()}});
     }
     catch(e){
         console.log(e);
@@ -67,8 +68,8 @@ function check_session(sid) {
     return !(sid in sessions);
 }
 
-async function check_credentials(username, psw) {
-    let user = await users.findOne({username: username});
+async function check_credentials(email, psw) {
+    let user = await users.findOne({email: email});
     if(user == null) return null;
     if(user.psw == psw)
     {
@@ -156,12 +157,12 @@ async function get_possible_recipes(id) {
         sessionId: str
     }
 */
-app.get('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
     console.log("/login");
     let id = null;
-    let username = req.query.username;
-    let psw = req.query.psw;
-    id = await check_credentials(username, psw);
+    let email = req.body.email;
+    let psw = req.body.psw;
+    id = await check_credentials(email, psw);
     if(id != null)
     {
         let sid = generate_session_id(id);
@@ -320,6 +321,7 @@ app.get('/guest_registration', async (req, res) => {
         }
     }while(id in sessions);
     guests.insertOne({id: id, last_login: Date.now()});
+    is_guest.add(id);
     sessions[id] = {id: id, time: Date.now()};
     res.send(id.toString());
 });
@@ -332,7 +334,7 @@ app.get('/sessions', (req, res) => {
     res.send(JSON.stringify(sessions));
 });
 
-app.post('/delete_account', async (req, res) => {
+app.delete('/delete_account', async (req, res) => {
     console.log("/delete_account");
     let sid = req.body.sid;
     if(check_session(sid)) {
@@ -348,8 +350,30 @@ app.post('/delete_account', async (req, res) => {
         await storage.deleteOne({userId: uid});
         res.send("ok");
     }
-    else res.status(404).send("username not found");
+    else res.status(404).send("user not found");
 });
+
+app.get("/user", async (req, res) => {
+    console.log("/user");
+    let sid = req.query.sid;
+    if(check_session(sid)) {
+        res.status(403).send("session not found");
+        return;
+    }
+
+    if(is_guest.has(sid)) res.send({guest: true, username: "guest"});
+    else
+    {
+        let uid = sessions[sid].id;
+        let user = await users.findOne({userId: uid});
+        if(user == null)
+        {
+            res.status(400).send("user not found");
+            return;
+        }
+        res.send({guest: false, username: user.username});
+    }
+})
 
 app.post('/change_password', async (req, res) => {
     console.log("/change_password");
@@ -388,7 +412,5 @@ app.post('/change_password', async (req, res) => {
     }
 });
 
-
-connect();
 
 export default {app, connect};

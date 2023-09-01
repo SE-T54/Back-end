@@ -42,7 +42,7 @@ paths:
   /login:
     get:
       summary: Login api.
-      description: Used to log in, if type='guest' only id is required otherwise only username and psw are required
+      description: Used to log in
       parameters:
         - name: email
           in: query
@@ -50,7 +50,7 @@ paths:
           required: true
           schema:
             type: string
-            default: SampleUsername
+            default: exmaple@example.com
         - name: psw
           in: query
           description: hashed psw for login
@@ -286,42 +286,46 @@ paths:
                 schema: 
                   type: integer
                   example: 1
-  /delete_account:
-    post:
-      summary: Delete the user
-      description: Used to delete all data of an account
-      requestBody:
-        content:
-          application/json:
-            schema:      # Request body contents
-              type: object
-              properties:
-                sid:
+  /user:
+      get:
+        summary: Return the username from a sid
+        parameters:
+          - name: sid
+            in: query
+            description: SID
+            required: true
+            schema:
+              type: string
+              default: 000SessionID000
+        responses:
+          '200':    # status code
+            description: Error
+            content:
+              json:
+                schema: 
+                  type: object
+                  properties:
+                    guest:
+                      type: boolean
+                      example: true
+                    username:
+                      type: string
+                      example: "guest"
+          '403':    # status code
+            description: Error
+            content:
+              json:
+                schema: 
                   type: string
-              example:   # Sample object
-                sid: 000SessionID000
-      responses:
-        '200':    # status code
-          description: Ok code
-          content:
-            json:
-              schema: 
-                type: string
-                example: ok
-        '400':    # status code
-          description: Error
-          content:
-            json:
-              schema: 
-                type: string
-                example: email already used
-        '401':    # status code
-          description: Error
-          content:
-            json:
-              schema: 
-                type: string
-                example: email not valid
+                  example: session not found   
+          '400':    # status code
+            description: Error
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: user not found
+
   /change_password:
     post:
       summary: Change the user password
@@ -416,3 +420,39 @@ paths:
               schema: 
                 type: string
                 example: generic error
+  /delete_account:
+    delete:
+      summary: Delete the user
+      description: Used to delete all data of an account
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                sid:
+                  type: string
+              example:   # Sample object
+                sid: 000SessionID000
+      responses:
+        '200':    # status code
+          description: Ok code
+          content:
+            json:
+              schema: 
+                type: string
+                example: ok
+        '403':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: session not found
+        '404':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: user not found
