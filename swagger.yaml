@@ -40,24 +40,21 @@ components:
 
 paths:
   /login:
-    get:
+    post:
       summary: Login api.
       description: Used to log in
-      parameters:
-        - name: email
-          in: query
-          description: email for login
-          required: true
-          schema:
-            type: string
-            default: exmaple@example.com
-        - name: psw
-          in: query
-          description: hashed psw for login
-          required: true
-          schema:
-            type: string
-            default: HashedPassword
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "esempio@gmail.com"
+                psw:
+                  type: string
+                  example: "HashedPassword"
       responses:
         '200':    # status code
           description: SID (session id)
