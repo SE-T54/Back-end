@@ -175,6 +175,13 @@ paths:
                 schema: 
                   type: string
                   example: ok
+          '401':    # status code
+            description: Error
+            content:
+              json:
+                schema: 
+                  type: string
+                  example: bad ingredient format
           '403':    # status code
             description: Error
             content:
@@ -361,7 +368,7 @@ paths:
                 example: user not found
   /remove:
     delete:
-      summary: Remove an ingredient from the user storage
+      summary: Remove an ingredient from the user storage, given the index from the storage
       requestBody:
         content:
           application/json:
@@ -374,7 +381,7 @@ paths:
                   type: string
               example:   # Sample object
                 sid: 000SessionID000
-                ingredient: Spaghetti
+                ingredient: 0
       responses:
         '200':    # status code
           description: Ok code
@@ -390,6 +397,20 @@ paths:
               schema: 
                 type: string
                 example: session not found
+        '402':    # status code
+          description: Error
+          content:
+            json:
+              schema: 
+                type: string
+                example: invalid index
+        '400':    # status code
+          description: raised when user never added an ingredient
+          content:
+            json:
+              schema: 
+                type: string
+                example: storage not found
         '401':    # status code
           description: Error
           content:

@@ -50,6 +50,7 @@ async function connect(){
         ingredients = db.collection("ingredients")
         let guest_ids = await guests.find().toArray();
         guest_ids.forEach((e) => {is_guest.add(e.id); sessions[e.id] = {id: e.id, time: Date.now()}});
+        await get_recipes();
     }
     catch(e){
         console.log(e);
@@ -160,6 +161,11 @@ async function generate_user_id()
     }
 }
 
+function check_ingredient(ingredient)
+{
+    return ingredient.name !== undefined && ingredient.expiration !== undefined && ingredient.quantity !== undefined;
+}
+
 app.post('/login', async (req, res) => {
     console.log("/login");
     let id = null;
@@ -190,14 +196,14 @@ app.post('/register', async (req, res) => {
     let check = await users.findOne({email: mail});
     if(check == null){
         //todo: send verification email
-        users.insertOne({username: req.body.username, psw: psw, email: mail, userId: id});
+        await users.insertOne({username: req.body.username, psw: psw, email: mail, userId: id});
         res.send("ok")
         return;
     }
     res.status(400).send("email already used");
 });
 
-app.post('/add', (req, res) => {
+app.post('/add', async (req, res) => {
     console.log("/add");
     let ingredient = req.body.ingredient;
     let sid = req.body.sid;
@@ -205,16 +211,20 @@ app.post('/add', (req, res) => {
         res.status(403).send("session not found");
         return;
     }
-    let id = sessions[sid].id;
-    add_ingredient(id, ingredient);
-    res.send("ok");
+    if(check_ingredient(ingredient))
+    {
+        let id = sessions[sid].id;
+        await add_ingredient(id, ingredient);
+        res.send("ok");
+        return;
+    }
+    res.status(401).send("bad ingredient format");
 });
 
 app.delete('/remove', async (req, res) => {
     console.log('/remove');
     let sid = req.body.sid;
     let ingredient = req.body.ingredient;
-    console.log(ingredient);
     if(check_session(sid)) {
         res.status(403).send("session not found");
         return;
@@ -223,13 +233,16 @@ app.delete('/remove', async (req, res) => {
     try{
         let st = await storage.findOne({userId: id});
         if(st == null){
-            res.send("storage not found");
+            res.status(400).send("storage not found");
             return;
         }
         let old = st.ingredients.length;
-        const index = st.ingredients.findIndex(value => value.name == ingredient);
-        if (index > -1) {
-            st.ingredients.splice(index, 1);
+        if (ingredient >= 0 && ingredient < old) {
+            st.ingredients.splice(ingredient, 1);
+        }
+        else{
+            res.status(402).send("invalid index");
+            return;
         }
         await storage.replaceOne({userId: id}, st);
         let removed = old-st.ingredients.length;
@@ -280,14 +293,6 @@ app.get('/guest_registration', async (req, res) => {
     is_guest.add(id);
     sessions[id] = {id: id, time: Date.now()};
     res.send(id.toString());
-});
-
-/*
-    only for debug
-*/
-app.get('/sessions', (req, res) => {
-    console.log("/sessions");
-    res.send(JSON.stringify(sessions));
 });
 
 app.delete('/delete_account', async (req, res) => {
