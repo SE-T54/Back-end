@@ -17,7 +17,7 @@ function random_bytes(bytes) {
 };
 
 const app = express();
-const uri = "mongodb+srv://admin:Afs3rAp8b8q0jGGj@cluster0.gozvphc.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.uri;
 const client = new MongoClient(uri);
 const dbName = "db_progetto";
 let db;
@@ -147,16 +147,19 @@ async function get_possible_recipes(id) {
     return ret_recipes.slice(0, 10).map((x) => x[0]);
 }
 
-/*
-    /login
-    params:{
-        username: str,
-        password: str
+async function generate_user_id()
+{
+    let id = 0;
+    while(true)
+    {
+        id = random_bytes(16);
+        let g = await guests.findOne({id: id});
+        let u = await users.findOne({userId: id});
+
+        if(g == null && u == null && !(id in sessions)) return id;
     }
-    return:{
-        sessionId: str
-    }
-*/
+}
+
 app.post('/login', async (req, res) => {
     console.log("/login");
     let id = null;
@@ -174,9 +177,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-/*
-    /register
-*/
 app.post('/register', async (req, res) => {
     console.log("/register");
     let mail = req.body.mail;
@@ -186,7 +186,7 @@ app.post('/register', async (req, res) => {
         res.status(401).send("email not valid");
         return;
     }
-    let id = random_bytes(16);
+    let id = await generate_user_id();
     let check = await users.findOne({email: mail});
     if(check == null){
         //todo: send verification email
@@ -197,17 +197,6 @@ app.post('/register', async (req, res) => {
     res.status(400).send("email already used");
 });
 
-/*
-    /add
-    params:{
-        sid: str,   (session id)
-        expiration: date,
-        ingredient: str
-    }
-    return:{
-        ok
-    }
-*/
 app.post('/add', (req, res) => {
     console.log("/add");
     let ingredient = req.body.ingredient;
@@ -253,15 +242,6 @@ app.delete('/remove', async (req, res) => {
     }
 })
 
-/*
-    /ingredients
-    params:{
-        sid: str
-    }
-    return:{
-        list of ingredients of the user
-    }
-*/
 app.get('/ingredients', async (req, res) => {
     console.log("/ingredients");
     let sid = req.query.sid;
@@ -279,15 +259,6 @@ app.get('/all_ingredients', async (req, res) => {
     res.send(await get_all_ingredients())
 })
 
-/*
-    /recipes
-    params:{
-        sid: str
-    }
-    return:{
-        list of possible recipes of the user
-    }
-*/
 app.get('/recipes', async (req, res) => {
     console.log("/recipes");
     let sid = req.query.sid;
@@ -300,27 +271,12 @@ app.get('/recipes', async (req, res) => {
     res.send(ret);
 });
 
-/*
-    /guest_registration
-    params:{
-    }
-    return:{
-        sid: string
-    }
-*/
 app.get('/guest_registration', async (req, res) => {
     console.log("/guest_registration");
-    let id = random_bytes(16);
-    
-    do{
-        id = random_bytes(16);
-        while(true) {
-            let tmp = await guests.findOne({id: id});
-            if(tmp == null) break;
-            id = random_bytes(16);
-        }
-    }while(id in sessions);
-    guests.insertOne({id: id, last_login: Date.now()});
+
+    let id = await generate_user_id();
+
+    guests.insertOne({id: id, register_date: Date.now()});
     is_guest.add(id);
     sessions[id] = {id: id, time: Date.now()};
     res.send(id.toString());
@@ -397,12 +353,7 @@ app.post('/change_password', async (req, res) => {
             res.status(405).send("old password does not correspond");
             return;
         }
-        await users.updateOne({ userId: uid },
-        {
-            $set: {
-                psw: new_psw
-            }
-        });
+        await users.updateOne({ userId: uid }, {$set:{psw: new_psw}});
         res.send("ok");
     }
     catch (error) 

@@ -194,16 +194,6 @@ paths:
             schema:
               type: string
               default: 000SessionID000
-        requestBody:
-          content:
-            application/json:
-              schema:      # Request body contents
-                type: object
-                properties:
-                  sid:
-                    type: string
-                example:   # Sample object
-                  sid: 000SessionID000
         responses:
           '200':    # status code
             description: List of ingredients
@@ -245,16 +235,6 @@ paths:
             schema:
               type: string
               default: 000SessionID000
-        requestBody:
-          content:
-            application/json:
-              schema:      # Request body contents
-                type: object
-                properties:
-                  sid:
-                    type: string
-                example:   # Sample object
-                  sid: 000SessionID000
         responses:
           '200':    # status code
             description: List of recipes
