@@ -24,6 +24,7 @@ let db;
 let users;
 let guests;
 let recipes;
+let recipes_images;
 let ingredients;
 let storage;
 let recipes_query = null;
@@ -46,6 +47,7 @@ async function connect(){
         users = db.collection("users");
         guests = db.collection("guests");
         recipes = db.collection("recipes");
+        recipes_images = db.collection("recipes_images");
         storage = db.collection("storage");
         ingredients = db.collection("ingredients")
         let guest_ids = await guests.find().toArray();
@@ -113,7 +115,7 @@ async function get_all_ingredients(){   //all ingredients
 }
 async function get_recipes() {
     if(recipes_query == null)
-        recipes_query = await recipes.find().limit(1000).toArray();
+        recipes_query = await recipes.find().toArray();
     return recipes_query;
 }
 async function get_possible_recipes(id) {
@@ -146,6 +148,17 @@ async function get_possible_recipes(id) {
         return b[3]-a[3];
     });
     return ret_recipes.slice(0, 10).map((x) => x[0]);
+}
+
+async function add_images(recipes)
+{
+    for(let i=0;i<recipes.length;i++)
+    {
+        let title = recipes[i].title;
+        let img = await recipes_images.findOne({title: title});
+        recipes[i].image = img.image;
+    }
+    return recipes;
 }
 
 async function generate_user_id()
@@ -281,6 +294,7 @@ app.get('/recipes', async (req, res) => {
     }
     let id = sessions[sid].id;
     let ret = await get_possible_recipes(id);
+    ret = await add_images(ret);
     res.send(ret);
 });
 
